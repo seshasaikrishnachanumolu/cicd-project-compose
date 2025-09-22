@@ -1,0 +1,63 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./sdpbackend-main
+      dockerfile: Dockerfile
+    image: sdp-backend:latest
+    container_name: sdp-backend-container
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/lldb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Seshasaich@123
+      SPRING_MAIL_USERNAME: llcart2024@gmail.com
+      SPRING_MAIL_PASSWORD: yourpassword
+      RAZORPAY_KEY_ID: rzp_test_jVej2lE9ffasi1
+      RAZORPAY_SECRET_KEY: 7MrYfpK5LmPzhg1jsM31kVlJ
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cicd-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: ecommerce-frontend:latest
+    container_name: ecommerce-frontend-container
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - cicd-network
+
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Seshasaich@123
+      MYSQL_DATABASE: lldb
+    ports:
+      - "3308:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - cicd-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pSeshasaich@123"]
+      timeout: 10s
+      retries: 10
+      interval: 5s
+      start_period: 45s
+
+volumes:
+  db_data:
+
+networks:
+  cicd-network:
+    driver: bridge
